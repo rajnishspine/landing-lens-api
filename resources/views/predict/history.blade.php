@@ -90,10 +90,17 @@
                                                 <td>
                                                     <div class="d-flex align-items-center">
                                                         @if($analysis->original_image_url)
-                                                            <img src="{{ $analysis->original_image_url }}" 
-                                                                 alt="Thumbnail" 
-                                                                 class="rounded"
-                                                                 style="width: 50px; height: 50px; object-fit: cover;">
+                                                            <a href="{{ $analysis->original_image_url }}" 
+                                                               class="glightbox" 
+                                                               data-gallery="history-gallery" 
+                                                               data-title="Original Image - {{ $analysis->original_filename }}" 
+                                                               data-description="Analysis ID: {{ $analysis->id }} • {{ $analysis->created_at->format('M j, Y g:i A') }}"
+                                                               title="Click to view full size">
+                                                                <img src="{{ $analysis->original_image_url }}" 
+                                                                     alt="Thumbnail" 
+                                                                     class="rounded image-hover"
+                                                                     style="width: 50px; height: 50px; object-fit: cover;">
+                                                            </a>
                                                         @else
                                                             <div class="bg-light rounded d-flex align-items-center justify-content-center" 
                                                                  style="width: 50px; height: 50px;">
@@ -144,8 +151,16 @@
                                                 <td>
                                                     <div class="btn-group" role="group">
                                                         @if($analysis->isCompleted())
-                                                            <a href="{{ route('predict.process') }}?id={{ $analysis->id }}" 
+                                                            <!-- <a href="{{ route('predict.process') }}?id={{ $analysis->id }}" 
                                                                class="btn btn-sm btn-outline-primary">
+                                                                <i class="fas fa-eye"></i>
+                                                            </a> -->
+                                                            <a href="{{ $analysis->processed_image_url }}" 
+                                                               class="glightbox btn btn-sm btn-outline-primary" 
+                                                               data-gallery="history-gallery" 
+                                                               data-title="Original Image - {{ $analysis->processed_image_url }}" 
+                                                               data-description="Analysis ID: {{ $analysis->id }} • {{ $analysis->updated_at->format('M j, Y g:i A') }}"
+                                                               title="Click to view full size">
                                                                 <i class="fas fa-eye"></i>
                                                             </a>
                                                             @if($analysis->processed_image_url)
@@ -196,4 +211,56 @@
             </div>
         </div>
     </div>
+
+    <!-- GLightbox CSS & JS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox/dist/css/glightbox.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js"></script>
+
+    <style>
+        /* GLightbox Image Hover Effects */
+        .image-hover {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .image-hover:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        
+        /* GLightbox Custom Styling */
+        .glightbox-clean .gslide-description {
+            background: linear-gradient(135deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.6) 100%);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            font-family: var(--font-family-primary);
+        }
+        
+        .glightbox-clean .gdesc-inner h4 {
+            color: white;
+            font-weight: var(--font-weight-semibold);
+        }
+    </style>
+
+    <script>
+        // Initialize GLightbox when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof GLightbox !== 'undefined') {
+                GLightbox({
+                    selector: '.glightbox',
+                    touchNavigation: true,
+                    loop: true,
+                    autoplayVideos: false,
+                    zoomable: true,
+                    draggable: true,
+                    closeButton: true,
+                    moreText: 'See more',
+                    download: true,
+                    counter: true,
+                    skin: 'clean'
+                });
+            }
+        });
+    </script>
 </x-app-layout>

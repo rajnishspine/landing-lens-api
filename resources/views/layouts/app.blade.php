@@ -177,10 +177,10 @@
             
             .card-title {
                 font-weight: var(--font-weight-semibold);
-                color: var(--color-text-primary);
+                /* color: var(--color-text-primary); */
                 background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
                 -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
+                /* -webkit-text-fill-color: transparent; */
                 background-clip: text;
             }
             

@@ -71,14 +71,24 @@
                         <h5 class="card-title mb-0">
                             <i class="fas fa-image me-2"></i>
                             Original Image
+                            <small class="float-end">
+                                <i class="fas fa-search-plus"></i>
+                                Click to enlarge
+                            </small>
                         </h5>
                     </div>
                     <div class="card-body text-center p-2">
                         <div class="image-container" style="max-height: 450px; overflow: hidden; border-radius: 0.5rem; border: 2px solid #e9ecef;">
-                            <img src="{{ $imageAnalysis->original_image_url }}" 
-                                 alt="Original Image" 
-                                 class="img-fluid w-100 h-100" 
-                                 style="object-fit: contain; max-height: 446px;">
+                            <a href="{{ $imageAnalysis->original_image_url }}" 
+                               class="glightbox" 
+                               data-gallery="result-gallery" 
+                               data-title="Original Image - {{ $imageAnalysis->original_filename }}" 
+                               data-description="Original uploaded image">
+                                <img src="{{ $imageAnalysis->original_image_url }}" 
+                                     alt="Original Image" 
+                                     class="img-fluid w-100 h-100 image-hover" 
+                                     style="object-fit: contain; max-height: 446px;">
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -89,22 +99,35 @@
                     <div class="card-header bg-success text-white">
                         <h5 class="card-title mb-0">
                             <i class="fas fa-bullseye me-2"></i>
-                            Processed Image (with Detections)
+                            AI Processed Image (with Detections)
+                            @if($imageAnalysis->processed_image_url)
+                            <small class="float-end">
+                                <i class="fas fa-search-plus"></i>
+                                Click to enlarge
+                            </small>
+                            @endif
                         </h5>
                     </div>
                     <div class="card-body text-center p-2">
                         @if($imageAnalysis->processed_image_url)
                             <div class="image-container" style="max-height: 450px; overflow: hidden; border-radius: 0.5rem; border: 2px solid #e9ecef;">
-                                <img src="{{ $imageAnalysis->processed_image_url }}" 
-                                     alt="Processed Image" 
-                                     class="img-fluid w-100 h-100" 
-                                     style="object-fit: contain; max-height: 446px;">
+                                <a href="{{ $imageAnalysis->processed_image_url }}" 
+                                   class="glightbox" 
+                                   data-gallery="result-gallery" 
+                                   data-title="AI Processed Image - {{ $imageAnalysis->original_filename }}" 
+                                   data-description="AI processed image with object detection markers">
+                                    <img src="{{ $imageAnalysis->processed_image_url }}" 
+                                         alt="Processed Image" 
+                                         class="img-fluid w-100 h-100 image-hover" 
+                                         style="object-fit: contain; max-height: 446px;">
+                                </a>
                             </div>
                         @else
                             <div class="d-flex align-items-center justify-content-center" style="height: 450px; background-color: #f8f9fa; border-radius: 0.5rem;">
                                 <div class="text-center">
-                                    <i class="fas fa-spinner fa-spin fa-2x text-muted mb-3"></i>
-                                    <p class="text-muted">Processing image...</p>
+                                    <i class="fas fa-robot fa-spin fa-2x text-primary mb-3"></i>
+                                    <p class="text-muted"><strong>AI is processing your image...</strong></p>
+                                    <small class="text-info">Please refresh the page in a few seconds</small>
                                 </div>
                             </div>
                         @endif
@@ -390,5 +413,56 @@
                 font-size: 0.875rem;
             }
         }
+        
+        /* GLightbox Image Hover Effects */
+        .image-hover {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .image-hover:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            filter: brightness(1.05);
+        }
+        
+        /* GLightbox Custom Styling */
+        .glightbox-clean .gslide-description {
+            background: linear-gradient(135deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.6) 100%);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            font-family: var(--font-family-primary);
+        }
+        
+        .glightbox-clean .gdesc-inner h4 {
+            color: white;
+            font-weight: var(--font-weight-semibold);
+        }
     </style>
+
+    <!-- GLightbox CSS & JS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox/dist/css/glightbox.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js"></script>
+
+    <script>
+        // Initialize GLightbox when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof GLightbox !== 'undefined') {
+                GLightbox({
+                    selector: '.glightbox',
+                    touchNavigation: true,
+                    loop: true,
+                    autoplayVideos: false,
+                    zoomable: true,
+                    draggable: true,
+                    closeButton: true,
+                    moreText: 'See more',
+                    download: true,
+                    counter: true,
+                    skin: 'clean'
+                });
+            }
+        });
+    </script>
 </x-app-layout> 
