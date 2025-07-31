@@ -1,166 +1,285 @@
-<section class="space-y-6">
+<section>
     <header class="mb-4">
         <h2 class="h6 text-muted mb-2">
             {{ __('Once your account is deleted, all of its resources and data will be permanently deleted. Before deleting your account, please download any data or information that you wish to retain.') }}
         </h2>
     </header>
 
-    <!-- Warning Alert -->
-    <div class="alert alert-danger border-danger">
-        <h6 class="alert-heading">
-            <i class="fas fa-exclamation-triangle me-2"></i>
-            {{ __('Permanent Account Deletion') }}
-        </h6>
-        <p class="mb-3">This action <strong>cannot be undone</strong>. When you delete your account:</p>
-        <ul class="mb-3">
-            <li>All your profile information will be permanently removed</li>
-            <li>Any uploaded images and analysis results will be deleted</li>
-            <li>You will lose access to all LandingLens analysis history</li>
-            <li>This action is immediate and irreversible</li>
-        </ul>
-        <p class="mb-0 small">
+    <!-- Warning Information -->
+    <div class="alert alert-danger border-0 shadow-sm mb-4">
+        <div class="d-flex align-items-start">
+            <i class="fas fa-exclamation-triangle text-danger me-3 mt-1"></i>
+            <div>
+                <h6 class="alert-heading mb-2">Account Deletion Warning</h6>
+                <p class="mb-2">This action permanently deletes your account and all associated data. This cannot be undone.</p>
+                <ul class="mb-0 small">
+                    <li>All profile information will be removed</li>
+                    <li>Image analysis history will be deleted</li>
+                    <li>Account access will be revoked immediately</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Account Statistics -->
+    <div class="card bg-light border-0 mb-4">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h6 class="card-title mb-2">
+                        <i class="fas fa-user-circle text-muted me-2"></i>
+                        Your Account Details
+                    </h6>
+                    <div class="row g-2">
+                        <div class="col-sm-6">
+                            <small class="text-muted d-block">Name</small>
+                            <strong>{{ Auth::user()->name }}</strong>
+                        </div>
+                        <div class="col-sm-6">
+                            <small class="text-muted d-block">Email</small>
+                            <strong>{{ Auth::user()->email }}</strong>
+                        </div>
+                        <div class="col-sm-6">
+                            <small class="text-muted d-block">Member Since</small>
+                            <strong>{{ Auth::user()->created_at->format('M j, Y') }}</strong>
+                        </div>
+                        <div class="col-sm-6">
+                            <small class="text-muted d-block">Total Analyses</small>
+                            <strong>{{ Auth::user()->imageAnalyses()->count() }}</strong>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 text-end">
+                    <div class="account-id-badge">
+                        <small class="text-muted d-block">Account ID</small>
+                        <code class="text-dark">#{{ Auth::user()->id }}</code>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Simple Delete Button -->
+    <div class="text-center mb-4" id="deleteInitial">
+        <button type="button" class="btn btn-outline-danger btn-lg" onclick="showDeleteForm()">
+            <i class="fas fa-trash-alt me-2"></i>
+            I Want to Delete My Account
+        </button>
+        <p class="text-muted mt-2 small">
             <i class="fas fa-info-circle me-1"></i>
-            Make sure to download any important data before proceeding.
+            Click to begin the account deletion process
         </p>
     </div>
 
-    <!-- Account Summary -->
-    <div class="card bg-light">
-        <div class="card-body">
-            <h6 class="card-title">
-                <i class="fas fa-user me-2"></i>
-                Account Summary
+    <!-- Delete Form (Hidden Initially) -->
+    <div id="deleteFormContainer" style="display: none;">
+        <div class="alert alert-warning border-0 mb-4">
+            <h6 class="alert-heading">
+                <i class="fas fa-question-circle me-2"></i>
+                Are you absolutely sure?
             </h6>
-            <div class="row">
-                <div class="col-md-6">
-                    <p class="mb-1"><strong>Name:</strong> {{ Auth::user()->name }}</p>
-                    <p class="mb-1"><strong>Email:</strong> {{ Auth::user()->email }}</p>
-                </div>
-                <div class="col-md-6">
-                    <p class="mb-1"><strong>Member Since:</strong> {{ Auth::user()->created_at->format('F j, Y') }}</p>
-                    <p class="mb-1"><strong>Account ID:</strong> #{{ Auth::user()->id }}</p>
-                </div>
-            </div>
+            <p class="mb-0">This will permanently delete your account and all associated data. This action cannot be undone.</p>
         </div>
-    </div>
 
-    <div class="d-flex gap-2 align-items-center">
-        <button type="button" 
-                class="btn btn-danger" 
-                data-bs-toggle="modal" 
-                data-bs-target="#confirmDeleteModal">
-            <i class="fas fa-trash-alt me-2"></i>
-            {{ __('Delete Account') }}
-        </button>
-        
-        <small class="text-muted">
-            <i class="fas fa-shield-alt me-1"></i>
-            You will be asked to confirm this action
-        </small>
-    </div>
-
-    <!-- Delete Confirmation Modal -->
-    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header bg-danger text-white">
-                    <h5 class="modal-title" id="confirmDeleteModalLabel">
-                        <i class="fas fa-exclamation-triangle me-2"></i>
-                        {{ __('Confirm Account Deletion') }}
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        <form method="post" action="{{ route('profile.destroy') }}" id="deleteAccountForm">
+            @csrf
+            @method('delete')
+            
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-shield-alt me-2"></i>
+                        Security Verification Required
+                    </h6>
                 </div>
-                
-                <form method="post" action="{{ route('profile.destroy') }}">
-                    @csrf
-                    @method('delete')
-                    
-                    <div class="modal-body">
-                        <div class="alert alert-warning">
-                            <i class="fas fa-exclamation-circle me-2"></i>
-                            <strong>{{ __('Are you sure you want to delete your account?') }}</strong>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <label for="deletePassword" class="form-label fw-bold">
+                            <i class="fas fa-lock me-1"></i>
+                            Enter your current password to confirm
+                        </label>
+                        <div class="input-group">
+                            <input type="password" 
+                                   class="form-control form-control-lg @error('password', 'userDeletion') is-invalid @enderror" 
+                                   id="deletePassword" 
+                                   name="password" 
+                                   placeholder="Your current password"
+                                   required>
+                            <button class="btn btn-outline-secondary" type="button" onclick="toggleDeletePassword()">
+                                <i class="fas fa-eye" id="deletePasswordIcon"></i>
+                            </button>
                         </div>
-
-                        <p class="mb-3">{{ __('This action cannot be undone. All your data will be permanently deleted.') }}</p>
-
-                        <div class="mb-3">
-                            <label for="password" class="form-label">
-                                <i class="fas fa-lock me-1"></i>
-                                {{ __('Please confirm with your password') }}
-                            </label>
-                            <div class="input-group">
-                                <input type="password" 
-                                       class="form-control @error('password', 'userDeletion') is-invalid @enderror" 
-                                       id="password" 
-                                       name="password" 
-                                       placeholder="{{ __('Enter your current password') }}"
-                                       required>
-                                <button class="btn btn-outline-secondary" type="button" onclick="toggleDeletePassword()">
-                                    <i class="fas fa-eye" id="delete-password-icon"></i>
-                                </button>
-                            </div>
-                            @error('password', 'userDeletion')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <!-- Final confirmation checkbox -->
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="confirmDelete" required>
-                            <label class="form-check-label" for="confirmDelete">
-                                {{ __('I understand this action is permanent and cannot be undone') }}
-                            </label>
-                        </div>
+                        @error('password', 'userDeletion')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>
-                    
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                            <i class="fas fa-times me-2"></i>
-                            {{ __('Cancel') }}
+
+                    <div class="form-check mb-4">
+                        <input class="form-check-input form-check-input-lg" type="checkbox" id="confirmDeletion" required>
+                        <label class="form-check-label fw-bold text-danger" for="confirmDeletion">
+                            I understand this action is permanent and cannot be undone
+                        </label>
+                    </div>
+
+                    <div class="form-check mb-4">
+                        <input class="form-check-input" type="checkbox" id="dataLoss" required>
+                        <label class="form-check-label" for="dataLoss">
+                            I acknowledge that all my data will be permanently lost
+                        </label>
+                    </div>
+
+                    <div class="form-check mb-4">
+                        <input class="form-check-input" type="checkbox" id="finalConfirm" required>
+                        <label class="form-check-label" for="finalConfirm">
+                            I want to permanently delete my account: <strong>{{ Auth::user()->email }}</strong>
+                        </label>
+                    </div>
+                </div>
+                <div class="card-footer bg-light">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <button type="button" class="btn btn-secondary" onclick="hideDeleteForm()">
+                            <i class="fas fa-arrow-left me-2"></i>
+                            Cancel
                         </button>
-                        <button type="submit" class="btn btn-danger" id="finalDeleteButton" disabled>
+                        <button type="submit" class="btn btn-danger btn-lg" id="finalDeleteButton" disabled>
                             <i class="fas fa-trash-alt me-2"></i>
-                            {{ __('Yes, Delete My Account') }}
+                            Permanently Delete Account
                         </button>
                     </div>
-                </form>
+                </div>
             </div>
-        </div>
+        </form>
     </div>
+
+    <style>
+        .account-id-badge {
+            padding: 0.75rem;
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 8px;
+        }
+
+        .form-check-input-lg {
+            width: 1.25rem;
+            height: 1.25rem;
+        }
+
+        .form-check-input-lg:checked {
+            background-color: #dc3545;
+            border-color: #dc3545;
+        }
+
+        .btn-outline-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        @media (max-width: 576px) {
+            .card-footer .d-flex {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .card-footer .btn {
+                width: 100%;
+            }
+        }
+    </style>
 
     <script>
-        function toggleDeletePassword() {
-            const input = document.getElementById('password');
-            const icon = document.getElementById('delete-password-icon');
+        // Simple Delete Account System
+        function showDeleteForm() {
+            document.getElementById('deleteInitial').style.display = 'none';
+            document.getElementById('deleteFormContainer').style.display = 'block';
             
-            if (input.type === 'password') {
-                input.type = 'text';
-                icon.className = 'fas fa-eye-slash';
-            } else {
-                input.type = 'password';
-                icon.className = 'fas fa-eye';
+            // Focus password field
+            setTimeout(() => {
+                const passwordInput = document.getElementById('deletePassword');
+                if (passwordInput) passwordInput.focus();
+            }, 100);
+        }
+
+        function hideDeleteForm() {
+            document.getElementById('deleteInitial').style.display = 'block';
+            document.getElementById('deleteFormContainer').style.display = 'none';
+            
+            // Reset form
+            const form = document.getElementById('deleteAccountForm');
+            if (form) {
+                form.reset();
+                updateDeleteButton();
+                
+                // Reset password visibility
+                const passwordInput = document.getElementById('deletePassword');
+                const icon = document.getElementById('deletePasswordIcon');
+                if (passwordInput) passwordInput.type = 'password';
+                if (icon) icon.className = 'fas fa-eye';
             }
         }
 
-        // Enable delete button only when checkbox is checked and password is entered
-        document.addEventListener('DOMContentLoaded', function() {
-            const checkbox = document.getElementById('confirmDelete');
-            const passwordInput = document.getElementById('password');
-            const deleteButton = document.getElementById('finalDeleteButton');
-
-            function updateDeleteButton() {
-                deleteButton.disabled = !(checkbox.checked && passwordInput.value.length > 0);
+        function toggleDeletePassword() {
+            const input = document.getElementById('deletePassword');
+            const icon = document.getElementById('deletePasswordIcon');
+            
+            if (input && icon) {
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.className = 'fas fa-eye-slash';
+                } else {
+                    input.type = 'password';
+                    icon.className = 'fas fa-eye';
+                }
             }
+        }
 
-            checkbox.addEventListener('change', updateDeleteButton);
-            passwordInput.addEventListener('input', updateDeleteButton);
-        });
+        function updateDeleteButton() {
+            const password = document.getElementById('deletePassword');
+            const confirm1 = document.getElementById('confirmDeletion');
+            const confirm2 = document.getElementById('dataLoss');
+            const confirm3 = document.getElementById('finalConfirm');
+            const deleteButton = document.getElementById('finalDeleteButton');
+            
+            if (password && confirm1 && confirm2 && confirm3 && deleteButton) {
+                const allValid = password.value.length > 0 && 
+                               confirm1.checked && 
+                               confirm2.checked && 
+                               confirm3.checked;
+                
+                deleteButton.disabled = !allValid;
+            }
+        }
 
-        // Clear form when modal is hidden
-        document.getElementById('confirmDeleteModal').addEventListener('hidden.bs.modal', function() {
-            document.getElementById('password').value = '';
-            document.getElementById('confirmDelete').checked = false;
-            document.getElementById('finalDeleteButton').disabled = true;
+        // Initialize form validation when document loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set up form validation for all required elements
+            const elementsToWatch = ['deletePassword', 'confirmDeletion', 'dataLoss', 'finalConfirm'];
+            
+            elementsToWatch.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    if (element.type === 'checkbox') {
+                        element.addEventListener('change', updateDeleteButton);
+                    } else {
+                        element.addEventListener('input', updateDeleteButton);
+                        element.addEventListener('keyup', updateDeleteButton);
+                    }
+                }
+            });
+            
+            // Add final confirmation before submission
+            const form = document.getElementById('deleteAccountForm');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    const finalConfirm = confirm(
+                        'FINAL WARNING: This will permanently delete your account and all data. ' +
+                        'This action cannot be undone. Are you absolutely sure?'
+                    );
+                    if (!finalConfirm) {
+                        e.preventDefault();
+                        return false;
+                    }
+                });
+            }
         });
     </script>
 </section>

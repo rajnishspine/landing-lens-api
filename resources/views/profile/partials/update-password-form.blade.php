@@ -22,7 +22,7 @@
                            name="current_password" 
                            autocomplete="current-password"
                            required>
-                    <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('update_password_current_password')">
+                    <button class="btn btn-outline-secondary" type="button" onclick="togglePasswordField('update_password_current_password')">
                         <i class="fas fa-eye" id="update_password_current_password_icon"></i>
                     </button>
                     @error('current_password', 'updatePassword')
@@ -46,7 +46,7 @@
                            autocomplete="new-password"
                            minlength="8"
                            required>
-                    <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('update_password_password')">
+                    <button class="btn btn-outline-secondary" type="button" onclick="togglePasswordField('update_password_password')">
                         <i class="fas fa-eye" id="update_password_password_icon"></i>
                     </button>
                     @error('password', 'updatePassword')
@@ -72,7 +72,7 @@
                            autocomplete="new-password"
                            minlength="8"
                            required>
-                    <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('update_password_password_confirmation')">
+                    <button class="btn btn-outline-secondary" type="button" onclick="togglePasswordField('update_password_password_confirmation')">
                         <i class="fas fa-eye" id="update_password_password_confirmation_icon"></i>
                     </button>
                     @error('password_confirmation', 'updatePassword')
@@ -128,16 +128,18 @@
     </form>
 
     <script>
-        function togglePassword(inputId) {
+        function togglePasswordField(inputId) {
             const input = document.getElementById(inputId);
             const icon = document.getElementById(inputId + '_icon');
             
-            if (input.type === 'password') {
-                input.type = 'text';
-                icon.className = 'fas fa-eye-slash';
-            } else {
-                input.type = 'password';
-                icon.className = 'fas fa-eye';
+            if (input && icon) {
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.className = 'fas fa-eye-slash';
+                } else {
+                    input.type = 'password';
+                    icon.className = 'fas fa-eye';
+                }
             }
         }
 
