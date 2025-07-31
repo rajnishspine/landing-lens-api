@@ -346,7 +346,7 @@
                         <div class="logo-container">
                             <i class="fas fa-eye"></i>
                         </div>
-                        <h2 class="brand-text">LandingLens AI</h2>
+                        <h2 class="brand-text">{{ config('app.name', 'Venus') }}</h2>
                         <p class="brand-subtitle">
                             <i class="fas fa-robot me-1"></i>
                             Object Detection & Analysis

@@ -13,7 +13,7 @@
                     <i class="fas fa-info-circle me-3 fs-4"></i>
                     <div>
                         <h5 class="alert-heading mb-1">Welcome back, {{ Auth::user()->name }}!</h5>
-                        <p class="mb-0">Ready to analyze some images with LandingLens AI? Upload an image to get started.</p>
+                        <p class="mb-0">Ready to analyze some images with {{ config('app.name', 'Venus') }}? Upload an image to get started.</p>
                     </div>
                 </div>
             </div>
@@ -29,7 +29,7 @@
                         </div>
                         <h5 class="card-title">Upload & Analyze</h5>
                         <p class="card-text">
-                            Upload an image and let LandingLens AI detect and identify objects with bounding boxes and confidence scores.
+                            Upload an image and let {{ config('app.name', 'Venus') }} detect and identify objects with bounding boxes and confidence scores.
                         </p>
                         <a href="{{ route('predict.index') }}" class="btn btn-primary btn-lg">
                             <i class="fas fa-magic me-2"></i>
@@ -164,7 +164,7 @@
                                 <span class="badge bg-primary rounded-pill me-3 mt-1">2</span>
                                 <div>
                                     <h6>API Processing</h6>
-                                    <p class="mb-0 text-muted">Your image is securely sent to LandingLens AI for analysis.</p>
+                                    <p class="mb-0 text-muted">Your image is securely sent to {{ config('app.name', 'Venus') }} for analysis.</p>
                                 </div>
                             </div>
                             <div class="d-flex align-items-start mb-3">

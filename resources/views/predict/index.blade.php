@@ -12,7 +12,7 @@
                     <div class="card-header bg-primary text-white">
                         <h5 class="card-title mb-0">
                             <i class="fas fa-cloud-upload-alt me-2"></i>
-                            Upload Image for LandingLens Analysis
+                            Upload Image for Analysis
                         </h5>
                     </div>
                     <div class="card-body">
@@ -90,7 +90,7 @@
                             <div class="d-grid gap-2">
                                 <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">
                                     <i class="fas fa-magic me-2"></i>
-                                    Analyze Image with LandingLens
+                                    Analyze Image
                                 </button>
                             </div>
                         </form>
@@ -173,7 +173,7 @@
                     <div class="card-body">
                         <ol class="mb-0">
                             <li>Upload an image file (JPEG or PNG format)</li>
-                            <li>The image will be sent to LandingLens AI for analysis</li>
+                            <li>The image will be sent to AI for analysis</li>
                             <li>Objects will be detected and highlighted with red bounding boxes</li>
                             <li>View the results with confidence scores and labels</li>
                         </ol>
@@ -213,7 +213,7 @@
             // Reset submit button
             function resetSubmitButton() {
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = '<i class="fas fa-magic me-2"></i>Analyze Image with LandingLens';
+                submitBtn.innerHTML = '<i class="fas fa-magic me-2"></i>Analyze Image';
             }
 
             // Note: Image validation and preview is now handled by the drag-drop system above
