@@ -11,6 +11,12 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
+/**
+ * @OA\Tag(
+ *     name="Image Analysis",
+ *     description="API Endpoints for AI-powered image object detection"
+ * )
+ */
 class PredictApiController extends Controller
 {
     private LandingLensService $landingLensService;
@@ -21,7 +27,56 @@ class PredictApiController extends Controller
     }
 
     /**
-     * Process image analysis via API
+     * Analyze image for object detection
+     *
+     * @OA\Post(
+     *     path="/api/v1/predict",
+     *     summary="Analyze image for object detection using AI",
+     *     tags={"Image Analysis"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\MediaType(
+     *             mediaType="multipart/form-data",
+     *             @OA\Schema(
+     *                 @OA\Property(property="image", type="string", format="binary", description="Image file (JPEG, PNG, JPG, max 10MB)"),
+     *                 @OA\Property(property="callback_url", type="string", format="url", example="https://example.com/webhook", description="Optional webhook URL for completion notification")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Image analyzed successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Image analyzed successfully"),
+     *             @OA\Property(property="data", ref="#/components/schemas/ImageAnalysis"),
+     *             @OA\Property(property="links", type="object",
+     *                 @OA\Property(property="self", type="string", format="url"),
+     *                 @OA\Property(property="original_image", type="string", format="url"),
+     *                 @OA\Property(property="processed_image", type="string", format="url")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error",
+     *         @OA\JsonContent(ref="#/components/schemas/ValidationErrorResponse")
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthenticated",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Unauthenticated")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Processing error",
+     *         @OA\JsonContent(ref="#/components/schemas/ErrorResponse")
+     *     )
+     * )
      * 
      * @param Request $request
      * @return JsonResponse
@@ -32,7 +87,6 @@ class PredictApiController extends Controller
             // Validate the request
             $validator = Validator::make($request->all(), [
                 'image' => 'required|image|mimes:jpeg,png,jpg|max:10240', // 10MB max
-                'email' => 'required|email', // Optional user identification
                 'callback_url' => 'sometimes|url', // Optional webhook URL
             ]);
 
@@ -46,8 +100,8 @@ class PredictApiController extends Controller
 
             $uploadedFile = $request->file('image');
             
-            // Get or create user (for API calls without authentication)
-            $user = $this->getOrCreateApiUser($request);
+            // Get authenticated user
+            $user = $request->user();
             
             // Process the image
             $imageAnalysis = $this->landingLensService->predict($uploadedFile, $user);
@@ -124,7 +178,36 @@ class PredictApiController extends Controller
     }
 
     /**
-     * Get analysis by ID
+     * Get analysis results by ID
+     *
+     * @OA\Get(
+     *     path="/api/v1/predict/{id}",
+     *     summary="Retrieve analysis results by ID",
+     *     tags={"Image Analysis"},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Analysis ID",
+     *         @OA\Schema(type="integer", example=123)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Analysis results retrieved successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", ref="#/components/schemas/ImageAnalysis")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Analysis not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Analysis not found")
+     *         )
+     *     )
+     * )
      * 
      * @param string $id
      * @return JsonResponse
@@ -186,7 +269,46 @@ class PredictApiController extends Controller
     }
 
     /**
-     * List recent analyses (public endpoint with pagination)
+     * List recent analyses
+     *
+     * @OA\Get(
+     *     path="/api/v1/predict",
+     *     summary="Get paginated list of recent analyses",
+     *     tags={"Image Analysis"},
+     *     @OA\Parameter(
+     *         name="per_page",
+     *         in="query",
+     *         description="Items per page (max 50)",
+     *         @OA\Schema(type="integer", example=10, minimum=1, maximum=50)
+     *     ),
+     *     @OA\Parameter(
+     *         name="status",
+     *         in="query",
+     *         description="Filter by status",
+     *         @OA\Schema(type="string", enum={"pending", "processing", "completed", "failed"})
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Recent analyses retrieved successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", type="array", @OA\Items(type="object",
+     *                 @OA\Property(property="analysis_id", type="integer", example=123),
+     *                 @OA\Property(property="status", type="string", example="completed"),
+     *                 @OA\Property(property="objects_detected_count", type="integer", example=3),
+     *                 @OA\Property(property="average_confidence", type="number", format="float", example=0.87),
+     *                 @OA\Property(property="created_at", type="string", format="datetime")
+     *             )),
+     *             @OA\Property(property="pagination", type="object",
+     *                 @OA\Property(property="current_page", type="integer", example=1),
+     *                 @OA\Property(property="per_page", type="integer", example=10),
+     *                 @OA\Property(property="total", type="integer", example=47),
+     *                 @OA\Property(property="last_page", type="integer", example=5),
+     *                 @OA\Property(property="has_more", type="boolean", example=true)
+     *             )
+     *         )
+     *     )
+     * )
      * 
      * @param Request $request
      * @return JsonResponse
@@ -219,7 +341,43 @@ class PredictApiController extends Controller
     }
 
     /**
-     * Get user's analyses (authenticated endpoint)
+     * Get authenticated user's analysis history
+     *
+     * @OA\Get(
+     *     path="/api/v1/my-analyses",
+     *     summary="Get authenticated user's analysis history",
+     *     tags={"Image Analysis"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="per_page",
+     *         in="query",
+     *         description="Items per page (max 50)",
+     *         @OA\Schema(type="integer", example=10, minimum=1, maximum=50)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="User's analyses retrieved successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/ImageAnalysis")),
+     *             @OA\Property(property="pagination", type="object",
+     *                 @OA\Property(property="current_page", type="integer", example=1),
+     *                 @OA\Property(property="per_page", type="integer", example=10),
+     *                 @OA\Property(property="total", type="integer", example=25),
+     *                 @OA\Property(property="last_page", type="integer", example=3),
+     *                 @OA\Property(property="has_more", type="boolean", example=true)
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthenticated",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Unauthenticated")
+     *         )
+     *     )
+     * )
      * 
      * @param Request $request
      * @return JsonResponse
@@ -248,7 +406,45 @@ class PredictApiController extends Controller
     }
 
     /**
-     * Delete analysis (authenticated endpoint)
+     * Delete analysis and associated files
+     *
+     * @OA\Delete(
+     *     path="/api/v1/predict/{id}",
+     *     summary="Delete a user's analysis and associated files",
+     *     tags={"Image Analysis"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Analysis ID",
+     *         @OA\Schema(type="integer", example=123)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Analysis deleted successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Analysis deleted successfully")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Analysis not found or not owned by user",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Analysis not found or not owned by user")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthenticated",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Unauthenticated")
+     *         )
+     *     )
+     * )
      * 
      * @param Request $request
      * @param string $id
@@ -282,38 +478,5 @@ class PredictApiController extends Controller
         ]);
     }
 
-    /**
-     * Get or create API user for anonymous requests
-     * 
-     * @param Request $request
-     * @return User
-     */
-    private function getOrCreateApiUser(Request $request): User
-    {
-        // If authenticated, use that user
-        if ($request->user()) {
-            return $request->user();
-        }
 
-        // If email provided, find or create user
-        if ($request->has('email')) {
-            $email = $request->get('email');
-            return User::firstOrCreate(
-                ['email' => $email],
-                [
-                    'name' => 'API User - ' . explode('@', $email)[0],
-                    'password' => bcrypt(\Str::random(32)), // Random password
-                ]
-            );
-        }
-
-        // Create or use anonymous API user
-        return User::firstOrCreate(
-            ['email' => 'api@landinglens.local'],
-            [
-                'name' => 'Anonymous API User',
-                'password' => bcrypt(\Str::random(32)),
-            ]
-        );
-    }
 }

@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\PredictApiController;
+use App\Http\Controllers\Api\AuthController;
 
 /*
 |--------------------------------------------------------------------------
@@ -17,22 +18,27 @@ use App\Http\Controllers\Api\PredictApiController;
 
 // Public API Routes (no authentication required)
 Route::prefix('v1')->group(function () {
-    // Image Analysis API
-    Route::post('/predict', [PredictApiController::class, 'predict'])->name('api.predict.create');
+    // Authentication Routes
+    Route::post('/register', [AuthController::class, 'register'])->name('api.register');
+    Route::post('/login', [AuthController::class, 'login'])->name('api.login');
+    
+    // Image Analysis API (Public endpoints - read only)
     Route::get('/predict/{id}', [PredictApiController::class, 'getAnalysis'])->name('api.predict.show');
     Route::get('/predict', [PredictApiController::class, 'index'])->name('api.predict.index');
 });
 
 // Authenticated API Routes (require API token)
-Route::middleware('auth:sanctum')->group(function () {
-    // User info
-    Route::get('/user', function (Request $request) {
-        return $request->user();
-    });
+Route::middleware('auth:sanctum')->prefix('v1')->group(function () {
+    // Authentication Management
+    Route::get('/user', [AuthController::class, 'user'])->name('api.user');
+    Route::post('/logout', [AuthController::class, 'logout'])->name('api.logout');
+    Route::post('/logout-all', [AuthController::class, 'logoutAll'])->name('api.logout.all');
+    Route::post('/refresh-token', [AuthController::class, 'refreshToken'])->name('api.refresh.token');
     
-    // User's analysis history
-    Route::prefix('v1')->group(function () {
-        Route::get('/my-analyses', [PredictApiController::class, 'userAnalyses']);
-        Route::delete('/predict/{id}', [PredictApiController::class, 'deleteAnalysis']);
-    });
+    // Image Analysis API (Authenticated endpoints)
+    Route::post('/predict', [PredictApiController::class, 'predict'])->name('api.predict.create');
+    
+    // User's analysis history and management
+    Route::get('/my-analyses', [PredictApiController::class, 'userAnalyses'])->name('api.my.analyses');
+    Route::delete('/predict/{id}', [PredictApiController::class, 'deleteAnalysis'])->name('api.predict.delete');
 });
